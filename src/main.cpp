@@ -29,7 +29,6 @@ int main(int argc, char *argv[])
     qDebug()<<"ffmpeg version:"<<version;
 
     MainWindow w;
-//111111111111111111111
 
     w.show();
     return a.exec();
