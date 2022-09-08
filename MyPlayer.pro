@@ -13,13 +13,14 @@ SOURCES += \
     src/mainwindow.cpp
 
 HEADERS += \
-    include/mainwindow.h \
+    include/mainwindow.h
 
 FORMS += \
     mainwindow.ui
 
 INCLUDEPATH += \
-    $$PWD/ffmpeg/include
+    $$PWD/include \
+    $$PWD/ffmpeg/include \
 
 LIBS += \
     $$PWD/ffmpeg/lib/avcodec.lib\
