@@ -1,0 +1,5 @@
+#ifndef OPENGLWIDGET2_H
+#define OPENGLWIDGET2_H
+//待用
+
+#endif // OPENGLWIDGET2_H

@@ -1,12 +1,16 @@
-#include "mainwindow.h"
-#include <iostream>
-#include <fstream>
-#include <QApplication>
-using namespace std;
+#ifndef HEADER_H
+#define HEADER_H
+
+#ifdef __cplusplus
+#define __STDC_CONSTANT_MACROS
+#ifdef _STDINT_H
+#undef _STDINT_H
+#endif
+# include "stdint.h"
+#endif
 
 extern "C"
 {
-
 #include "libavfilter/avfilter.h"
 #include "libswresample/swresample.h"
 #include "libpostproc/postprocess.h"
@@ -27,13 +31,4 @@ extern "C"
 
 }
 
-
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
-    w.setWindowTitle("MyPlayer");
-    return a.exec();
-}
-
+#endif // HEADER_H

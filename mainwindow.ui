@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="FFmpegwidget" name="ffmpegwidget" native="true">
+   <widget class="MultimediaWidget" name="ffmpegwidget" native="true">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -75,9 +75,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>FFmpegwidget</class>
+   <class>MultimediaWidget</class>
    <extends>QWidget</extends>
-   <header location="global">include/ffmpegwidget.h</header>
+   <header location="global">include/multimediawidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
