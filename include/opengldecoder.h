@@ -16,6 +16,11 @@ public :
     void seturl(QString url);
     int open_file();
     void stop();
+    void seek(int position);
+
+    void setVpts(qint64 *ptr);
+    void setApts(qint64 *ptr);
+    void setAudioTimeBase(AVRational base);
 
     int get_width();
     int get_height();
@@ -46,6 +51,12 @@ private:
     bool stop_flag=false;
 
     bool is_first=true;
+
+    qint64* pVpts=NULL;
+    qint64* pApts=NULL;
+
+    AVRational videoTimeBase;
+    AVRational audioTimeBase;
 };
 
 

@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    connect(ui->horizontalSlider,&QSlider::valueChanged,ui->ffmpegwidget,MultimediaWidget::seek);
 }
 
 MainWindow::~MainWindow()
@@ -24,5 +25,11 @@ void MainWindow::on_play_Button_clicked()
 void MainWindow::on_stop_Button_clicked()
 {
     ui->ffmpegwidget->stop();
+}
+
+
+
+void MainWindow::on_horizontalSlider_sliderReleased()
+{
 }
 

@@ -22,7 +22,13 @@ public:
     ~AudioDecoder();
     void seturl(QString url);
     //    bool open_file();
+    void seek(int position);
+
     void stop();
+
+    void setVpts(qint64 *ptr);
+    void setApts(qint64 *ptr);
+    void setAudioTimeBase(AVRational base);
 
 protected:
     void run();
@@ -39,6 +45,8 @@ signals:
     void pcmIn_stop();
     void audiosink_start(QIODevice *device);
     void audiosink_stop();
+    void pcmIn_seek(int position);
+    void time_base(AVRational base);
 };
 
 class PcmInputDevice : public QIODevice
@@ -51,8 +59,16 @@ public:
     void start();
     void stop();
     bool open_file();
+    void seek(int position);
+
+    void setVpts(qint64 *ptr);
+    void setApts(qint64 *ptr);
+
     qint64 readData(char *data, qint64 maxlen) override;
     qint64 writeData(const char *data, qint64 len) override;
+
+signals:
+    void time_base(AVRational base);
 
 public slots:
     void mystop();
@@ -78,6 +94,9 @@ private:
     double sleep_time=0;
 
     QString _url;
+
+    qint64* pVpts;
+    qint64* pApts;
 };
 
 #endif // AUDIODECODER_H

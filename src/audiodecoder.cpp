@@ -28,6 +28,9 @@ AudioDecoder::AudioDecoder(QObject* parent)
     connect(this,&AudioDecoder::pcmIn_stop,this->m_pcmInputDevice,&PcmInputDevice::mystop);
     connect(this,&AudioDecoder::audiosink_start,this->m_audioSinkOutput,QOverload<QIODevice*>::of(&QAudioSink::start));
     connect(this,&AudioDecoder::audiosink_stop,this->m_audioSinkOutput,&QAudioSink::stop);
+    connect(this,&AudioDecoder::pcmIn_seek,this->m_pcmInputDevice,&PcmInputDevice::seek);
+
+    connect(this->m_pcmInputDevice,&PcmInputDevice::time_base,this,&AudioDecoder::setAudioTimeBase);
 }
 
 AudioDecoder::~AudioDecoder()
@@ -38,6 +41,11 @@ AudioDecoder::~AudioDecoder()
 void AudioDecoder::seturl(QString url)
 {
     _url=url;
+}
+
+void AudioDecoder::seek(int position)
+{
+    emit pcmIn_seek(position);
 }
 
 //bool AudioDecoder::open_file()
@@ -53,6 +61,21 @@ void AudioDecoder::stop()
     //    m_audioSinkOutput->stop();
 }
 
+void AudioDecoder::setVpts(qint64 *ptr)
+{
+    m_pcmInputDevice->setVpts(ptr);
+}
+
+void AudioDecoder::setApts(qint64 *ptr)
+{
+    m_pcmInputDevice->setApts(ptr);
+}
+
+void AudioDecoder::setAudioTimeBase(AVRational base)
+{
+    emit time_base(base);
+}
+
 void AudioDecoder::run(){
     emit pcmIn_start(this->_url);
     //    m_pcmInputDevice->start();
@@ -62,6 +85,7 @@ void AudioDecoder::run(){
 
 PcmInputDevice::PcmInputDevice()
 {
+
 }
 
 bool PcmInputDevice::open_file()
@@ -98,6 +122,7 @@ bool PcmInputDevice::open_file()
     }
 
     aCodecPara = fmtCtx->streams[aStreamIndex]->codecpar;
+    AVStream* pAVStream=fmtCtx->streams[aStreamIndex];
     codec = avcodec_find_decoder(aCodecPara->codec_id);
     if(!codec){
         printf("Cannot find any codec for audio.\n");
@@ -133,7 +158,47 @@ bool PcmInputDevice::open_file()
                                  0,NULL);
     swr_init(swr_ctx);
 
+    emit time_base(fmtCtx->streams[aStreamIndex]->time_base);
+
+    // 显示视频相关的参数信息（编码上下文）
+    qDebug() << "音频比特率:" << codecCtx->bit_rate;
+    qDebug() << "音频宽高:" << codecCtx->width << "x" << codecCtx->height;
+    qDebug() << "音频格式:" << codecCtx->pix_fmt;
+    qDebug() << "音频帧率分母:" << codecCtx->time_base.den;
+    qDebug() << "音频帧率分子:" << codecCtx->time_base.num;
+
+    //    qDebug() << "音频帧率分母:" << pAVStream->avg_frame_rate.den;
+    //    qDebug() << "音频帧率分子:" << pAVStream->avg_frame_rate.num;
+
+    qDebug() << "音频帧率分母:" << pAVStream->time_base.den;
+    qDebug() << "音频帧率分子:" << pAVStream->time_base.num;
+
+    //    qDebug() << "总时长:" << pAVStream->duration / 10000.0 << "s";
+    qDebug() << "音频总时长:" << pAVStream->duration *av_q2d(pAVStream->time_base) << "s";
+    qDebug() << "音频总帧数:" << pAVStream->nb_frames;
+    double fps = pAVStream->nb_frames / (pAVStream->duration *av_q2d(pAVStream->time_base));
+    qDebug() << "音频平均帧率:" << fps;
+    double interval =1000/fps;
+    qDebug() << "音频帧间隔:" << interval << "ms";
+
     return true;
+}
+
+void PcmInputDevice::seek(int position)
+{
+    if(aStreamIndex!=-1)
+        av_seek_frame(fmtCtx,aStreamIndex,(fmtCtx->streams[aStreamIndex]->duration)*position/100,AVSEEK_FLAG_BACKWARD);
+    avcodec_flush_buffers(codecCtx);
+}
+
+void PcmInputDevice::setVpts(qint64 *ptr)
+{
+    this->pVpts=ptr;
+}
+
+void PcmInputDevice::setApts(qint64 *ptr)
+{
+    this->pApts=ptr;
 }
 
 void PcmInputDevice::start()
@@ -178,6 +243,9 @@ qint64 PcmInputDevice::readData(char *data, qint64 len)
                           而不带P的数据格式（即交错排列）排列方式为：
                           LRLRLRLRLRLRLRLRLRLRLRLRLRLRLRLRLRLRL...（每个LR为一个音频样本）
                         */
+//                    qDebug()<<"音频pts"<<frame->pts;
+                    *pApts=frame->pts;
+
                     if(av_sample_fmt_is_planar(codecCtx->sample_fmt)){
                         int len = swr_convert(swr_ctx,
                                               //                                                  &audio_out_buffer,////////

@@ -28,8 +28,25 @@ extern "C"
 }
 
 
+extern "C"
+{
+
+    #include "SDL.h"
+    #undef main //
+}
+
+
 int main(int argc, char *argv[])
 {
+    //SDLTEST
+//    if(SDL_Init(SDL_INIT_VIDEO) == -1){	//SDL_初始化
+//        printf("Could not initialize SDL!\n");
+//        return 0;
+//    }
+//    printf("SDL initialized.\n");
+//    SDL_Quit();	//退出SDL调用
+
+
     QApplication a(argc, argv);
     MainWindow w;
     w.show();

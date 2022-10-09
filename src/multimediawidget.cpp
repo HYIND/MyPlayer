@@ -8,6 +8,13 @@ MultimediaWidget::MultimediaWidget(QWidget *parent)
     :QOpenGLWidget(parent)
 {
     this->videodecoder=new opengldecoder();
+    this->audiodecoder=new AudioDecoder(this);
+
+    videodecoder->setVpts(&vpts);
+    videodecoder->setApts(&apts);
+    audiodecoder->setVpts(&vpts);
+    audiodecoder->setApts(&apts);
+
     connect(videodecoder,&opengldecoder::sigFirst,[=](uchar* p,int w,int h){
         ptr=p;
         width=w;
@@ -17,8 +24,11 @@ MultimediaWidget::MultimediaWidget(QWidget *parent)
         update();
         //        updateGL();
     });
+    connect(audiodecoder,&AudioDecoder::time_base,this,&MultimediaWidget::setAudioTimeBase);
 
-    this->audiodecoder=new AudioDecoder(this);
+    connect(this,&MultimediaWidget::video_seek,videodecoder,&opengldecoder::seek);
+    connect(this,&MultimediaWidget::audio_seek,audiodecoder,&AudioDecoder::seek);
+
 }
 
 MultimediaWidget::~MultimediaWidget()
@@ -27,32 +37,49 @@ MultimediaWidget::~MultimediaWidget()
 
 void MultimediaWidget::seturl(QString url)
 {
-    videodecoder->seturl(url);
     audiodecoder->seturl(url);
+    videodecoder->seturl(url);
 }
 
 void MultimediaWidget::play(QString url)
 {
     stop();
     seturl(url);
-    videodecoder->start();
     audiodecoder->start();
+    videodecoder->start();
 }
 
 void MultimediaWidget::stop(){
+    //    if(audiodecoder->isRunning())
+    //    {
+    audiodecoder->stop();
+    audiodecoder->requestInterruption();
+    audiodecoder->quit();
+    audiodecoder->wait(100);
+    //    }
+
     if(videodecoder->isRunning()){
         videodecoder->stop();
         videodecoder->requestInterruption();
         videodecoder->quit();
-        //        videodecoder->wait(100);
+        videodecoder->wait(100);
     }
-    if(audiodecoder->isRunning())
-    {
-        audiodecoder->stop();
-        audiodecoder->requestInterruption();
-        audiodecoder->quit();
-        //      audiodecoder->wait(100);
+
+    vpts=-1;
+    apts=-1;
+}
+
+void MultimediaWidget::seek(int position)
+{
+    emit audio_seek(position);
+    if(videodecoder->isRunning()){
+        emit video_seek(position);
     }
+}
+
+void MultimediaWidget::setAudioTimeBase(AVRational base)
+{
+    videodecoder->setAudioTimeBase(base);
 }
 
 void MultimediaWidget::initializeGL()

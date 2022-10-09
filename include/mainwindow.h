@@ -20,6 +20,8 @@ private slots:
 
     void on_stop_Button_clicked();
 
+    void on_horizontalSlider_sliderReleased();
+
 private:
     Ui::MainWindow *ui;
 };

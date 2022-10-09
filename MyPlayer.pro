@@ -35,17 +35,20 @@ FORMS += \
 
 INCLUDEPATH += \
     $$PWD/include \
-    $$PWD/ffmpeg/include
+    $$PWD/ffmpeg/include \
+    $$PWD/sdl/include
 
 LIBS += \
-    $$PWD/ffmpeg/lib/avcodec.lib\
-    $$PWD/ffmpeg/lib/avdevice.lib\
-    $$PWD/ffmpeg/lib/avfilter.lib\
-    $$PWD/ffmpeg/lib/avformat.lib\
-    $$PWD/ffmpeg/lib/avutil.lib\
-    $$PWD/ffmpeg/lib/postproc.lib\
-    $$PWD/ffmpeg/lib/swresample.lib\
-    $$PWD/ffmpeg/lib/swscale.lib
+    -L$$PWD/ffmpeg/lib -lavcodec \
+                       -lavdevice \
+                       -lavfilter \
+                       -lavformat \
+                       -lavutil \
+                       -lpostproc \
+                       -lswresample \
+                       -lswscale  \
+    -L$$PWD/sdl/lib -lSDL2 -lSDL2main  \
+
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

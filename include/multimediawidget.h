@@ -23,10 +23,17 @@ public:
 
     void play(QString url);
     void stop();
+    void seek(int position);
+
+    void setAudioTimeBase(AVRational base);
 
     void initializeGL();
     void resizeGL();
     void paintGL();
+
+signals:
+    void video_seek(int position);
+    void audio_seek(int position);
 
 private:
     QOpenGLShaderProgram m_program;     //shader程序
@@ -38,6 +45,9 @@ private:
     opengldecoder* videodecoder;
     AudioDecoder* audiodecoder;
     uchar* ptr;
+
+    qint64 vpts=-1;
+    qint64 apts=-1;
 };
 
 #endif // MULTIMEDIAWIDGET_H
